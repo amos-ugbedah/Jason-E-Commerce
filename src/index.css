@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+body {
+    font-family: 'Inter', sans-serif;
+  }
+  
+  /* Custom styles */
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors;
+  }
+  
+  .input-field {
+    @apply border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500;
+  }
+
+  @layer utilities {
+  .animate-marquee {
+    animation: marquee 25s linear infinite;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
