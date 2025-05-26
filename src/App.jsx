@@ -1,92 +1,86 @@
 /* eslint-disable no-unused-vars */
-import { Routes, Route } from "react-router-dom";
-import { useEffect, lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
+import { useEffect, lazy, Suspense, useMemo } from "react";
 import { useDispatch } from "react-redux";
 import { setUser } from "./features/auth/authSlice";
 import { supabase } from "./lib/supabaseClient";
 import toast from "react-hot-toast";
-import { useAuth } from "./context/AuthContext";
+import { useAuth, useProtectedRoute } from "./context/AuthContext";
 
 // Components
 import Navbar from "./components/jason/Navbar";
 import Footer from "./components/jason/Footer";
 import JasonAssistant from "./features/jason/virtual-assistant/JasonAssistant";
 import AdvertHero from "./components/AdvertHero";
-import UserProtectedRoute from "./components/jason/dashboard/UserProtectedRoute";
-import SellerProtectedRoute from "./components/jason/sellers/SellerProtectedRoute";
 import LoadingSpinner from "./components/jason/sellers/LoadingSpinner";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
 import MaintenancePage from "./pages/MaintenancePage";
 
-// Lazy-loaded Pages with better error handling
-const lazyLoad = (path) =>
-  lazy(() =>
-    import(`./${path}`).catch((err) => {
-      console.error("Failed to load component:", err);
-      return { default: () => <MaintenancePage /> };
-    })
-  );
+// Route-based code splitting with explicit imports
+const routeComponents = {
+  HomePage: lazy(() => import("./pages/HomePage")),
+  ProductsPage: lazy(() => import("./pages/ProductsPage")),
+  ProductPage: lazy(() => import("./pages/ProductPage")),
+  CategoryProductsPage: lazy(() => import("./pages/CategoryProductsPage")),
+  CartPage: lazy(() => import("./pages/CartPage")),
+  CheckoutPage: lazy(() => import("./pages/CheckoutPage")),
+  DashboardPage: lazy(() => import("./pages/DashboardPage")),
+  SellWithUs: lazy(() => import("./pages/SellWithUs")),
+  AuthPage: lazy(() => import("./pages/AuthPage")),
+  ForgotPassword: lazy(() => import("./components/ForgotPassword")),
+  ResetPasswordPage: lazy(() => import("./pages/ResetPasswordPage")),
+  SellerRegistrationForm: lazy(() => import("./pages/SellerRegistrationForm")),
+  SellerDashboard: lazy(() => import("./pages/SellerDashboard")),
+  SellerLogin: lazy(() => import("./pages/SellerLogin")),
+  SellerHub: lazy(() => import("./pages/SellerHub")),
+  CompleteSellerProfile: lazy(() => import("./pages/CompleteSellerProfile")),
+  UnauthorizedPage: lazy(() => import("./pages/UnauthorizedPage")),
+  NotFoundPage: lazy(() => import("./pages/NotFoundPage")),
+  SearchResult: lazy(() => import("./pages/SearchResult")),
+  AboutPage: lazy(() => import("./pages/AboutPage")),
+  SummerSale: lazy(() => import("./pages/SummerSale")),
+  NewArrivals: lazy(() => import("./pages/NewArrivals")),
+  BestDeals: lazy(() => import("./pages/BestDeals")),
+  AddProductPage: lazy(() => import("./pages/seller/AddProductPage")),
+  SellerProducts: lazy(() => import("./pages/seller/Products")),
+  EditProductPage: lazy(() => import("./pages/seller/EditProduct")),
+  SellerSettings: lazy(() => import("./pages/seller/Settings")),
+  OrderHistory: lazy(() => import("./components/jason/OrderHistory")),
+  WishlistPreview: lazy(() => import("./components/jason/WishlistPreview")),
+  AccountSettings: lazy(() => import("./components/jason/dashboard/AccountSettings")),
+  AddressBook: lazy(() => import("./components/jason/dashboard/AddressBook")),
+  AddressForm: lazy(() => import("./components/jason/dashboard/AddressForm")),
+  PaymentMethodsList: lazy(() => import("./components/jason/dashboard/PaymentMethodsList")),
+  PaymentMethodForm: lazy(() => import("./components/jason/dashboard/PaymentMethodForm")),
+  DailyDealsPage: lazy(() => import("./pages/DailyDealsPage")),
+  JasonsPicksPage: lazy(() => import("./pages/JasonsPicksPage")),
+  ContactPage: lazy(() => import("./pages/ContactPage")),
+  FAQPage: lazy(() => import("./pages/FAQPage")),
+  ReturnsPage: lazy(() => import("./pages/ReturnsPage"))
+};
 
-// Existing imports...
-const HomePage = lazyLoad("pages/HomePage");
-const ProductsPage = lazyLoad("pages/ProductsPage");
-const ProductPage = lazyLoad("pages/ProductPage");
-const CategoryProductsPage = lazyLoad("pages/CategoryProductsPage");
-const CartPage = lazyLoad("pages/CartPage");
-const CheckoutPage = lazyLoad("pages/CheckoutPage");
-const DashboardPage = lazyLoad("pages/DashboardPage");
-const SellWithUs = lazyLoad("pages/SellWithUs");
-const AuthPage = lazyLoad("pages/AuthPage");
-const ForgotPassword = lazyLoad("components/ForgotPassword");
-const ResetPasswordPage = lazyLoad("pages/ResetPasswordPage");
-const SellerRegistrationForm = lazyLoad("pages/SellerRegistrationForm");
-const SellerDashboard = lazyLoad("pages/SellerDashboard");
-const SellerLogin = lazyLoad("pages/SellerLogin");
-const SellerHub = lazyLoad("pages/SellerHub");
-const CompleteSellerProfile = lazyLoad("pages/CompleteSellerProfile");
-const UnauthorizedPage = lazyLoad("pages/UnauthorizedPage");
-const NotFoundPage = lazyLoad("pages/NotFoundPage");
-const SearchResult = lazyLoad("pages/SearchResult");
-const AboutPage = lazyLoad("pages/AboutPage");
+// Protected Route Components
+const UserProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return <LoadingSpinner fullScreen />;
+  return isAuthenticated ? children : <Navigate to="/auth" replace />;
+};
 
-// Sales Pages
-const SummerSale = lazyLoad("pages/SummerSale");
-const NewArrivals = lazyLoad("pages/NewArrivals");
-const BestDeals = lazyLoad("pages/BestDeals");
-
-// Seller Pages
-const AddProductPage = lazyLoad("pages/seller/AddProductPage");
-const SellerProducts = lazyLoad("pages/seller/Products");
-const EditProductPage = lazyLoad("pages/seller/EditProduct");
-const SellerSettings = lazyLoad("pages/seller/Settings");
-
-// Dashboard Components
-const OrderHistory = lazyLoad("components/jason/OrderHistory");
-const WishlistPreview = lazyLoad("components/jason/WishlistPreview");
-const AccountSettings = lazyLoad("components/jason/dashboard/AccountSettings");
-const AddressBook = lazyLoad("components/jason/dashboard/AddressBook");
-const AddressForm = lazyLoad("components/jason/dashboard/AddressForm");
-const PaymentMethodsList = lazyLoad("components/jason/dashboard/PaymentMethodsList");
-const PaymentMethodForm = lazyLoad("components/jason/dashboard/PaymentMethodForm");
-
-// New Pages
-const DailyDealsPage = lazyLoad("pages/DailyDealsPage");
-const JasonsPicksPage = lazyLoad("pages/JasonsPicksPage");
-const ContactPage = lazyLoad("pages/ContactPage");
-const FAQPage = lazyLoad("pages/FAQPage");
-const ReturnsPage = lazyLoad("pages/ReturnsPage");
+const SellerProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingSpinner fullScreen />;
+  return user?.user_metadata?.role === 'seller' ? children : <Navigate to="/unauthorized" replace />;
+};
 
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
+  // Handle auth state changes
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       try {
         const currentUser = session?.user || null;
         dispatch(setUser(currentUser));
@@ -129,6 +123,10 @@ function App() {
     return <MaintenancePage />;
   }
 
+  if (authLoading) {
+    return <LoadingSpinner fullScreen />;
+  }
+
   return (
     <div className="flex flex-col min-h-screen text-gray-800 bg-gray-50">
       <AdvertHero />
@@ -140,89 +138,66 @@ function App() {
           <Suspense fallback={<LoadingSpinner fullScreen />}>
             <Routes>
               {/* Public routes */}
-              <Route path="/" element={<HomePage />} />
-              <Route path="/products" element={<ProductsPage />} />
-              <Route path="/products/:id" element={<ProductPage />} />
-              <Route
-                path="/categories/:categorySlug"
-                element={<CategoryProductsPage />}
-              />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
-              <Route path="/sell-with-us" element={<SellWithUs />} />
-              <Route path="/unauthorized" element={<UnauthorizedPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/search" element={<SearchResult />} />
+              <Route path="/" element={<routeComponents.HomePage />} />
+              <Route path="/products" element={<routeComponents.ProductsPage />} />
+              <Route path="/products/:id" element={<routeComponents.ProductPage />} />
+              <Route path="/categories/:categorySlug" element={<routeComponents.CategoryProductsPage />} />
+              <Route path="/cart" element={<routeComponents.CartPage />} />
+              <Route path="/auth" element={<routeComponents.AuthPage />} />
+              <Route path="/forgot-password" element={<routeComponents.ForgotPassword />} />
+              <Route path="/reset-password" element={<routeComponents.ResetPasswordPage />} />
+              <Route path="/sell-with-us" element={<routeComponents.SellWithUs />} />
+              <Route path="/unauthorized" element={<routeComponents.UnauthorizedPage />} />
+              <Route path="/about" element={<routeComponents.AboutPage />} />
+              <Route path="/search" element={<routeComponents.SearchResult />} />
 
               {/* Sales Pages */}
-              <Route path="/summer-sale" element={<SummerSale />} />
-              <Route path="/new-arrivals" element={<NewArrivals />} />
-              <Route path="/best-deals" element={<BestDeals />} />
+              <Route path="/summer-sale" element={<routeComponents.SummerSale />} />
+              <Route path="/new-arrivals" element={<routeComponents.NewArrivals />} />
+              <Route path="/best-deals" element={<routeComponents.BestDeals />} />
 
               {/* New Pages */}
-              <Route path="/deals" element={<DailyDealsPage />} />
-              <Route path="/jasons-picks" element={<JasonsPicksPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/faq" element={<FAQPage />} />
-              <Route path="/returns" element={<ReturnsPage />} />
+              <Route path="/deals" element={<routeComponents.DailyDealsPage />} />
+              <Route path="/jasons-picks" element={<routeComponents.JasonsPicksPage />} />
+              <Route path="/contact" element={<routeComponents.ContactPage />} />
+              <Route path="/faq" element={<routeComponents.FAQPage />} />
+              <Route path="/returns" element={<routeComponents.ReturnsPage />} />
 
               {/* Protected customer routes */}
               <Route element={<UserProtectedRoute />}>
-                <Route path="/dashboard" element={<DashboardPage />}>
-                  <Route
-                    index
-                    element={
-                      <h2 className="text-xl font-semibold">Account Overview</h2>
-                    }
-                  />
-                  <Route path="orders" element={<OrderHistory />} />
-                  <Route path="wishlist" element={<WishlistPreview />} />
-                  <Route path="settings" element={<AccountSettings />} />
-                  <Route path="addresses" element={<AddressBook />}>
-                    <Route path="add" element={<AddressForm />} />
-                    <Route path=":id/edit" element={<AddressForm />} />
+                <Route path="/dashboard" element={<routeComponents.DashboardPage />}>
+                  <Route index element={<h2 className="text-xl font-semibold">Account Overview</h2>} />
+                  <Route path="orders" element={<routeComponents.OrderHistory />} />
+                  <Route path="wishlist" element={<routeComponents.WishlistPreview />} />
+                  <Route path="settings" element={<routeComponents.AccountSettings />} />
+                  <Route path="addresses" element={<routeComponents.AddressBook />}>
+                    <Route path="add" element={<routeComponents.AddressForm />} />
+                    <Route path=":id/edit" element={<routeComponents.AddressForm />} />
                   </Route>
-                  <Route
-                    path="payment-methods"
-                    element={<PaymentMethodsList />}
-                  />
-                  <Route
-                    path="payment-methods/add"
-                    element={<PaymentMethodForm />}
-                  />
-                  <Route
-                    path="payment-methods/:id/edit"
-                    element={<PaymentMethodForm />}
-                  />
+                  <Route path="payment-methods" element={<routeComponents.PaymentMethodsList />} />
+                  <Route path="payment-methods/add" element={<routeComponents.PaymentMethodForm />} />
+                  <Route path="payment-methods/:id/edit" element={<routeComponents.PaymentMethodForm />} />
                 </Route>
-                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/checkout" element={<routeComponents.CheckoutPage />} />
               </Route>
 
               {/* Seller routes */}
-              <Route path="/seller/login" element={<SellerLogin />} />
-              <Route
-                path="/seller/register"
-                element={<SellerRegistrationForm />}
-              />
+              <Route path="/seller/login" element={<routeComponents.SellerLogin />} />
+              <Route path="/seller/register" element={<routeComponents.SellerRegistrationForm />} />
 
               {/* Protected seller routes */}
               <Route element={<SellerProtectedRoute />}>
-                <Route path="/seller/dashboard" element={<SellerDashboard />} />
-                <Route path="/seller/hub" element={<SellerHub />} />
-                <Route
-                  path="/seller/complete-profile"
-                  element={<CompleteSellerProfile />}
-                />
-                <Route path="/seller/products/new" element={<AddProductPage />} />
-                <Route path="/seller/products" element={<SellerProducts />} />
-                <Route path="/seller/products/:id/edit" element={<EditProductPage />} />
-                <Route path="/seller/settings" element={<SellerSettings />} />
+                <Route path="/seller/dashboard" element={<routeComponents.SellerDashboard />} />
+                <Route path="/seller/hub" element={<routeComponents.SellerHub />} />
+                <Route path="/seller/complete-profile" element={<routeComponents.CompleteSellerProfile />} />
+                <Route path="/seller/products/new" element={<routeComponents.AddProductPage />} />
+                <Route path="/seller/products" element={<routeComponents.SellerProducts />} />
+                <Route path="/seller/products/:id/edit" element={<routeComponents.EditProductPage />} />
+                <Route path="/seller/settings" element={<routeComponents.SellerSettings />} />
               </Route>
 
               {/* Fallback route */}
-              <Route path="*" element={<NotFoundPage />} />
+              <Route path="*" element={<routeComponents.NotFoundPage />} />
             </Routes>
           </Suspense>
         </ErrorBoundary>

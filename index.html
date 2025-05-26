@@ -7,8 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Jason E-Commerce App">
     
-    <!-- Either use modulepreload or remove entirely -->
-    <link rel="modulepreload" href="/src/main.jsx">
+    <!-- Preload main assets -->
+    <link rel="modulepreload" href="/src/main.jsx" as="script">
+    <link rel="preload" href="/src/main.jsx" as="script">
     
     <title>Jason E-Commerce</title>
     <link rel="alternate icon" href="/favicon.ico" type="image/x-icon">

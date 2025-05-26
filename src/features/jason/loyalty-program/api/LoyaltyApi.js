@@ -1,18 +1,20 @@
-// features/jason/loyalty-program/api/loyaltyApi.js
-import { supabase } from "@/lib/supabase";
-
+// Add these exports if they don't exist
 export const fetchLoyaltyStatus = async (userId) => {
-  return supabase
-    .from("jason_profiles")
-    .select("loyalty_points, loyalty_tier")
-    .eq("user_id", userId)
-    .single();
+  try {
+    const response = await fetch(`/api/loyalty/status/${userId}`);
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching loyalty status:', error);
+    throw error;
+  }
 };
 
-export const claimReward = async (userId, rewardId) => {
-  return supabase
-    .from("jason_loyalty_rewards")
-    .update({ claimed: true })
-    .eq("id", rewardId)
-    .eq("user_id", userId);
+export const fetchAvailableRewards = async () => {
+  try {
+    const response = await fetch('/api/loyalty/rewards');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching rewards:', error);
+    throw error;
+  }
 };

@@ -1,39 +1,49 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { fetchLoyaltyStatus, fetchAvailableRewards } from "./api/LoyaltyApi";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { 
+  fetchLoyaltyStatus, 
+  fetchAvailableRewards 
+} from './api/LoyaltyApi';
+
+// Add this export
+export const fetchLoyaltyData = createAsyncThunk(
+  'loyalty/fetchData',
+  async (userId, { rejectWithValue }) => {
+    try {
+      const [status, rewards] = await Promise.all([
+        fetchLoyaltyStatus(userId),
+        fetchAvailableRewards()
+      ]);
+      return { status, rewards };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 const loyaltySlice = createSlice({
-  name: "loyalty",
+  name: 'loyalty',
   initialState: {
-    points: 0,
-    tier: "bronze",
+    status: null,
     rewards: [],
-    status: "idle",
+    loading: false,
+    error: null
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // Handle fetchLoyaltyStatus actions
-      .addCase(fetchLoyaltyStatus.pending, (state) => {
-        state.status = "loading";
+      .addCase(fetchLoyaltyData.pending, (state) => {
+        state.loading = true;
       })
-      .addCase(fetchLoyaltyStatus.fulfilled, (state, action) => {
-        state.points = action.payload.loyalty_points;
-        state.tier = action.payload.loyalty_tier;
-        state.status = "succeeded";
-      })
-
-      // Handle fetchAvailableRewards actions
-      .addCase(fetchAvailableRewards.pending, (state) => {
-        state.status = "loading_rewards";
-      })
-      .addCase(fetchAvailableRewards.fulfilled, (state, action) => {
+      .addCase(fetchLoyaltyData.fulfilled, (state, action) => {
+        state.loading = false;
+        state.status = action.payload.status;
         state.rewards = action.payload.rewards;
-        state.status = "rewards_succeeded";
       })
-      .addCase(fetchAvailableRewards.rejected, (state) => {
-        state.status = "rewards_failed";
+      .addCase(fetchLoyaltyData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
-  },
+  }
 });
 
 export default loyaltySlice.reducer;
