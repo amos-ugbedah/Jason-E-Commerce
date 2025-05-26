@@ -1,4 +1,3 @@
-// src/pages/ProductsPage.jsx
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts } from "../features/products/productsSlice";
@@ -28,9 +27,9 @@ export default function ProductsPage() {
 
     // Apply filter first
     if (filterOption === "On Sale") {
-      result = result.filter(product => product.discountPercentage > 0);
+      result = result.filter((product) => product.discountPercentage > 0);
     } else if (filterOption === "In Stock") {
-      result = result.filter(product => product.stock > 0);
+      result = result.filter((product) => product.stock > 0);
     }
 
     // Then apply sorting
@@ -55,11 +54,11 @@ export default function ProductsPage() {
 
   return (
     <div className="container px-4 py-8 mx-auto mt-24">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col items-start justify-between gap-4 mb-8 md:flex-row md:items-center">
         <h1 className="text-3xl font-bold">All Products</h1>
-        <div className="flex space-x-4">
-          <select 
-            className="px-3 py-2 border rounded-lg"
+        <div className="flex flex-col w-full gap-2 md:flex-row md:space-x-4 md:w-auto">
+          <select
+            className="w-full px-3 py-2 border rounded-lg md:w-auto"
             value={sortOption}
             onChange={handleSortChange}
           >
@@ -68,8 +67,8 @@ export default function ProductsPage() {
             <option value="Price: High to Low">Price: High to Low</option>
             <option value="Rating">Rating</option>
           </select>
-          <select 
-            className="px-3 py-2 border rounded-lg"
+          <select
+            className="w-full px-3 py-2 border rounded-lg md:w-auto"
             value={filterOption}
             onChange={handleFilterChange}
           >
@@ -85,7 +84,9 @@ export default function ProductsPage() {
       )}
       {error && <div className="py-4 text-center text-red-500">{error}</div>}
       {status === "succeeded" && (
-        <ProductGrid products={sortedProducts.length > 0 ? sortedProducts : products} />
+        <ProductGrid
+          products={sortedProducts.length > 0 ? sortedProducts : products}
+        />
       )}
     </div>
   );

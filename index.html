@@ -3,11 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/images/jasonicon1.ico" />
+    <link rel="preconnect" href="https://clwmeqjlldpipapfttsl.supabase.co" crossorigin>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+    <meta name="description" content="Jason E-Commerce App">
+    
+    <!-- Either use modulepreload or remove entirely -->
+    <link rel="modulepreload" href="/src/main.jsx">
+    
+    <title>Jason E-Commerce</title>
+    <link rel="alternate icon" href="/favicon.ico" type="image/x-icon">
   </head>
   <body>
     <div id="root"></div>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    
     <script type="module" src="/src/main.jsx"></script>
+    
+    <script>
+      window.addEventListener('error', function(e) {
+        if (e.message.includes('Failed to fetch dynamically imported module')) {
+          console.error('Module load error:', e);
+          if (confirm('A loading error occurred. Reload the page?')) {
+            window.location.reload();
+          }
+        }
+      });
+    </script>
   </body>
 </html>

@@ -12,24 +12,24 @@ export default function HomePage() {
   }, [dispatch]);
 
   return (
-    <div className="container mx-auto px-4 py-8 mt-24">
+    <div className="container px-4 py-8 mx-auto mt-24">
       <section className="mb-12">
-        <h1 className="text-3xl font-bold mb-6">Welcome to Jason</h1>
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-8 rounded-xl mb-8">
-          <h2 className="text-2xl font-bold mb-2">Summer Sale!</h2>
+        <h1 className="mb-6 text-3xl font-bold">Welcome to Jason</h1>
+        <div className="p-8 mb-8 text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl">
+          <h2 className="mb-2 text-2xl font-bold">Summer Sale!</h2>
           <p className="mb-4">Up to 50% off selected items</p>
-          <button className="bg-white text-blue-600 px-6 py-2 rounded-lg font-medium">
+          <button className="px-6 py-2 font-medium text-blue-600 bg-white rounded-lg">
             Shop Now
           </button>
         </div>
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">Featured Products</h2>
+        <h2 className="mb-6 text-2xl font-bold">Featured Products</h2>
         {status === "loading" ? (
           <div>Loading...</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             {featuredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
