@@ -3,25 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/images/jasonicon1.ico" />
-    <link rel="preconnect" href="https://clwmeqjlldpipapfttsl.supabase.co" crossorigin>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Jason E-Commerce App">
-    
-    <!-- Preload main assets -->
-    <link rel="modulepreload" href="/src/main.jsx" as="script">
-    <link rel="preload" href="/src/main.jsx" as="script">
-    
+    <meta name="description" content="Jason E-Commerce App" />
     <title>Jason E-Commerce</title>
-    <link rel="alternate icon" href="/favicon.ico" type="image/x-icon">
   </head>
   <body>
     <div id="root"></div>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    
+
+    <!-- ✅ Let Vite handle this, works for dev and gets replaced in production -->
     <script type="module" src="/src/main.jsx"></script>
-    
+
     <script>
-      window.addEventListener('error', function(e) {
+      window.addEventListener('error', function (e) {
         if (e.message.includes('Failed to fetch dynamically imported module')) {
           console.error('Module load error:', e);
           if (confirm('A loading error occurred. Reload the page?')) {
